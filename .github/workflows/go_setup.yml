@@ -1,0 +1,32 @@
+name: Golang Setup runner
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore: [
+      "README.md",
+      ".gitignore",
+      "LICENSE",
+      "**/*.mod",
+      "**/*.sum",
+    ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: [ubuntu-latest]
+        go-ver: [ '1.2x.x' ]
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+      
+      - name: Setup Go ${{ matrix.go-ver }}
+        uses: actions/setup-go@v5.3.0
+        with:
+          go-version: ${{ matrix.go-ver }}
+
+      - name: Show Golang version
+        run: |
+          go version
+
