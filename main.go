@@ -35,31 +35,60 @@ func mysql() {
 		Port:         os.Getenv("MYSQL_PORT"),
 	}
 
-	db, err := sql.Open(
+	dsn, err := sql.Open(
 		"mysql", db_conn.Username+":"+db_conn.UserPassword+"@tcp("+db_conn.Hostname+":"+db_conn.Port+")/test",
 	)
+	log.Println(dsn.Stats())
+
 	if err != nil {
-		log.Fatalf("connect to mysql failed : %v", err)
+		log.Fatal(err)
 	}
 
-	defer db.Close()
-
-	log.Println("connect to mysql success")
+	log.Println("Connect to mysql success")
+	defer dsn.Close()
 }
 
-func server() {
+// Create user in the database
+type Users struct {
+	UserName     string `json:"user_name"`
+	UserEmail    string `json:"user_email"`
+	UserPassword string `json:"user_password"`
+	UserRole     int    `json:"user_role"`
+}
+
+func createUser(ctx *gin.Context) {
+	ctx.JSON(200, gin.H{})
+}
+
+func registerUser(ctx *gin.Context) {
+	ctx.JSON(200, gin.H{
+		"msg": "Register User",
+	})
+}
+
+func Route() *gin.Engine {
 	route := gin.Default()
-	route.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
+	route.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
 
-	log.Println("Server start at url : localhost:50000")
-	route.Run(":50000")
+	userGroup := route.Group("/user")
+	{
+		userGroup.POST("/register", createUser)
+		userGroup.POST("/signin", registerUser)
+	}
+
+	return route
 }
 
 func main() {
 	mysql()
-	server()
+
+	route := Route()
+	log.Println("Server start at url : localhost:50000")
+	if err := route.Run(":50000"); err != nil {
+		log.Fatal(err)
+	}
 }
