@@ -21,8 +21,7 @@ func Route() *gin.Engine {
 }
 
 type LocalAddr struct {
-	LocalHost string
-	Port      string
+	Port string
 }
 
 func Run() {
@@ -30,11 +29,10 @@ func Run() {
 	route := Route()
 
 	localServer := LocalAddr{
-		LocalHost: configs.GetEnv("PUBLIC_HOST"),
-		Port:      configs.GetEnv("PORT"),
+		Port: configs.GetEnv("PORT"),
 	}
 
-	if err := route.Run(localServer.LocalHost + ":" + localServer.Port); err != nil {
+	if err := route.Run(":" + localServer.Port); err != nil {
 		log.Fatal("Error not start server")
 	}
 
