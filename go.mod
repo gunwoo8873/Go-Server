@@ -1,4 +1,4 @@
-module GoServer
+module goserver
 
 go 1.24.0
 
@@ -8,9 +8,7 @@ require (
 
 	//// Read .env file
 	github.com/joho/godotenv v1.5.1
-)
 
-require (
 	//// MySQL Clinet Connection lib
 	filippo.io/edwards25519 v1.1.0 // indirect
 
