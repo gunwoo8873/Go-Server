@@ -1,9 +1,11 @@
-package MySQL
+package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	//// Read .env file
 	"github.com/joho/godotenv"
@@ -11,13 +13,6 @@ import (
 	//// MySQL Database Driver
 	_ "github.com/go-sql-driver/mysql"
 )
-
-func EnvLoad() {
-	err := godotenv.Load("./.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
 
 type DBConfig struct {
 	Hostname string
@@ -27,8 +22,20 @@ type DBConfig struct {
 	Database string
 }
 
-func ClientConn() {
-	EnvLoad()
+func ReadEnv() {
+	workPath, err := os.Getwd() // Current work get directory path
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	envPath := filepath.Join(workPath, ".env")
+	if err := godotenv.Load(envPath); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
+func Connect() {
+	ReadEnv()
 	DBAddr := DBConfig{
 		Hostname: os.Getenv("MYSQL_HOSTNAME"),
 		Username: os.Getenv("MYSQL_USERNAME"),
@@ -37,12 +44,18 @@ func ClientConn() {
 		Database: os.Getenv("MYSQL_DATABASE"),
 	}
 
-	dsn, err := sql.Open(
-		"mysql", DBAddr.Username+":"+DBAddr.Password+"@tcp("+DBAddr.Hostname+":"+DBAddr.Port+")/"+DBAddr.Database,
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+		DBAddr.Username, DBAddr.Password, DBAddr.Hostname, DBAddr.Port, DBAddr.Database,
 	)
+
+	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Errorf("Failed to Open database: %w", err)
 	}
 
-	defer dsn.Close()
+	if err := conn.Ping(); err != nil {
+		fmt.Errorf("Failed to Ping database: %w", err)
+	}
+
+	log.Println("Successfully connected to MySQL database")
 }
