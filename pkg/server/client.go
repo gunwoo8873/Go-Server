@@ -1,6 +1,8 @@
 package server
 
 import (
+	"goserver/configs"
+
 	//// Web Framwork
 	"log"
 
@@ -19,17 +21,22 @@ func Route() *gin.Engine {
 }
 
 type LocalAddr struct {
-	Port string
+	LocalHost string
+	Port      string
 }
 
 func Run() {
+	configs.ReadEnv()
 	route := Route()
 
-	portAddr := LocalAddr{
-		Port: "50000",
+	localServer := LocalAddr{
+		LocalHost: configs.GetEnv("PUBLIC_HOST"),
+		Port:      configs.GetEnv("PORT"),
 	}
 
-	if err := route.Run(":" + portAddr.Port); err != nil {
+	if err := route.Run(localServer.LocalHost + ":" + localServer.Port); err != nil {
 		log.Fatal("Error not start server")
 	}
+
+	log.Println("Server start")
 }
